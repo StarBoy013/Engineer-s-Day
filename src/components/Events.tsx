@@ -121,100 +121,91 @@ const EventCard: React.FC<{
 };
 
 export const Events: React.FC<EventsProps> = ({ onJoinEvent }) => {
-  const row1 = challengeEvents.slice(0, 5);
-  const row2 = challengeEvents.slice(5, 10);
-
-  const track1Ref = useRef<HTMLDivElement>(null);
-  const track2Ref = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const track1 = track1Ref.current;
-    const track2 = track2Ref.current;
-    const section = document.getElementById("events");
-    if (!track1 || !track2 || !section) return;
+    const track = trackRef.current;
+    const container = containerRef.current;
+    if (!track || !container) return;
 
-    let targetX1 = 0;
-    let targetX2 = 0;
-    let currentX1 = 0;
-    let currentX2 = 0;
+    let targetX = 0;
+    let currentX = 0;
     let animationFrameId: number;
 
     const updatePosition = () => {
       // Smooth lerp (10% adjustment per frame)
-      currentX1 += (targetX1 - currentX1) * 0.1;
-      currentX2 += (targetX2 - currentX2) * 0.1;
+      currentX += (targetX - currentX) * 0.1;
 
-      // Apply translation to tracks
-      track1.style.transform = `translateX(${currentX1}px)`;
-      track2.style.transform = `translateX(${currentX2}px)`;
+      // Apply translation to track
+      track.style.transform = `translateX(${currentX}px)`;
 
       animationFrameId = requestAnimationFrame(updatePosition);
     };
 
     const handleScroll = () => {
-      const rect = section.getBoundingClientRect();
+      const rect = container.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
 
-      // Only calculate when section is visible
-      if (rect.top < viewportHeight && rect.bottom > 0) {
-        const scrollRange = rect.height + viewportHeight;
-        const scrolledAmount = viewportHeight - rect.top;
-        const progress = Math.min(Math.max(scrolledAmount / scrollRange, 0), 1);
+      // When the sticky container is pinned (top of container <= 0 and bottom >= viewport)
+      if (rect.top <= 0 && rect.bottom >= viewportHeight) {
+        const scrollableDistance = rect.height - viewportHeight;
+        const scrolled = -rect.top;
+        const progress = Math.min(Math.max(scrolled / scrollableDistance, 0), 1);
 
-        // Map progress [0, 1] to translation range.
-        // Row 1 slides left (moves towards -300px), row 2 slides right (moves towards +300px).
-        // Let's set a maximum travel distance of 300px on desktop, smaller on mobile.
-        const isMobile = window.innerWidth < 768;
-        const maxTranslate = isMobile ? 180 : 350;
-        
-        targetX1 = (progress - 0.5) * -maxTranslate;
-        targetX2 = (progress - 0.5) * maxTranslate;
+        // Maximum translation needed to show all cards up to the 10th card's right boundary
+        const trackWidth = track.scrollWidth;
+        const maxTranslate = Math.max(trackWidth - viewportWidth, 0);
+
+        targetX = progress * -maxTranslate;
+      } else if (rect.top > 0) {
+        // Before pinning starts
+        targetX = 0;
+      } else if (rect.bottom < viewportHeight) {
+        // After unpinning (fully scrolled through)
+        const trackWidth = track.scrollWidth;
+        const maxTranslate = Math.max(trackWidth - viewportWidth, 0);
+        targetX = -maxTranslate;
       }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll, { passive: true });
     animationFrameId = requestAnimationFrame(updatePosition);
-    handleScroll(); // Initial position check
+    handleScroll(); // Initial check
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
 
   return (
-    <section className="py-24" id="events">
-      <div className="max-w-max-width mx-auto px-margin-edge mb-16">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
-          <div>
-            <span className="font-label-caps text-label-caps text-secondary block mb-2 tracking-[0.3em]">
-              ANNOTATION 02
-            </span>
-            <h2 className="font-headline-lg text-4xl sm:text-headline-lg uppercase text-primary">
-              Events &amp; Games
-            </h2>
-          </div>
-          <p className="font-body-md text-on-surface-variant max-w-md">
-            Rigorous trials designed to stress-test your technical proficiency across diverse engineering disciplines.
-          </p>
-        </div>
-      </div>
-
-      {/* Sliding Tracks Linked to Scroll */}
-      <div className="flex flex-col gap-8 overflow-hidden w-full py-4">
-        {/* Row 1: Sliding Left on Scroll */}
-        <div className="marquee-container w-full overflow-hidden marquee-mask">
-          <div ref={track1Ref} className="flex gap-8 marquee-track">
-            {row1.map((event) => (
-              <EventCard key={event.id} event={event} onJoinEvent={onJoinEvent} />
-            ))}
+    <section ref={containerRef} className="relative h-[300vh]" id="events">
+      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-center bg-background pt-24 pb-16">
+        {/* Title and Intro */}
+        <div className="max-w-max-width mx-auto px-margin-edge w-full mb-12 flex-shrink-0">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
+            <div>
+              <span className="font-label-caps text-label-caps text-secondary block mb-2 tracking-[0.3em]">
+                ANNOTATION 02
+              </span>
+              <h2 className="font-headline-lg text-4xl sm:text-headline-lg uppercase text-primary">
+                Events &amp; Games
+              </h2>
+            </div>
+            <p className="font-body-md text-on-surface-variant max-w-md">
+              Rigorous trials designed to stress-test your technical proficiency across diverse engineering disciplines.
+            </p>
           </div>
         </div>
 
-        {/* Row 2: Sliding Right on Scroll */}
-        <div className="marquee-container w-full overflow-hidden marquee-mask">
-          <div ref={track2Ref} className="flex gap-8 marquee-track">
-            {row2.map((event) => (
+        {/* Horizontal Scroll Track */}
+        <div className="marquee-container w-full overflow-hidden marquee-mask flex-grow flex items-center">
+          <div ref={trackRef} className="flex gap-8 px-margin-edge marquee-track">
+            {challengeEvents.map((event) => (
               <EventCard key={event.id} event={event} onJoinEvent={onJoinEvent} />
             ))}
           </div>

@@ -54,7 +54,7 @@ function App() {
   }, []);
 
   return (
-    <div className="bg-background text-on-surface font-body-md blueprint-grid min-h-screen overflow-x-hidden">
+    <div className="bg-background text-on-surface font-body-md blueprint-grid min-h-screen">
       {/* Navigation Header */}
       <Navbar onRegisterClick={() => scrollToSection("register")} />
 
@@ -68,9 +68,7 @@ function App() {
           <About />
         </div>
 
-        <div className="reveal-on-scroll reveal">
-          <Events onJoinEvent={handleJoinEvent} />
-        </div>
+        <Events onJoinEvent={handleJoinEvent} />
 
         <div className="reveal-on-scroll reveal">
           <Agenda />
