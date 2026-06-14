@@ -123,6 +123,10 @@ const EventCard: React.FC<{
 export const Events: React.FC<EventsProps> = ({ onJoinEvent }) => {
   const trackRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const progressLineRef = useRef<HTMLDivElement>(null);
+  const telemetryXRef = useRef<HTMLSpanElement>(null);
+  const telemetryProgressRef = useRef<HTMLSpanElement>(null);
+  const telemetryCardRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const track = trackRef.current;
@@ -139,6 +143,29 @@ export const Events: React.FC<EventsProps> = ({ onJoinEvent }) => {
 
       // Apply translation to track
       track.style.transform = `translateX(${currentX}px)`;
+
+      // Calculate progress and update telemetry/progress bar
+      const viewportWidth = window.innerWidth;
+      const trackWidth = track.scrollWidth;
+      const maxTranslate = Math.max(trackWidth - viewportWidth, 0);
+
+      if (maxTranslate > 0) {
+        const pct = Math.abs(currentX) / maxTranslate;
+        if (progressLineRef.current) {
+          progressLineRef.current.style.transform = `scaleX(${pct})`;
+        }
+        if (telemetryProgressRef.current) {
+          telemetryProgressRef.current.textContent = `${Math.round(pct * 100)}%`;
+        }
+        if (telemetryCardRef.current) {
+          const activeCard = Math.min(Math.max(Math.round(pct * 9) + 1, 1), 10);
+          telemetryCardRef.current.textContent = activeCard.toString().padStart(2, '0');
+        }
+      }
+
+      if (telemetryXRef.current) {
+        telemetryXRef.current.textContent = `${Math.round(currentX)}px`;
+      }
 
       animationFrameId = requestAnimationFrame(updatePosition);
     };
@@ -184,7 +211,21 @@ export const Events: React.FC<EventsProps> = ({ onJoinEvent }) => {
 
   return (
     <section ref={containerRef} className="relative h-[300vh]" id="events">
-      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-center bg-background pt-24 pb-16">
+      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-center bg-background pt-24 pb-16 relative">
+        {/* Schematic Corner Brackets / Crosshairs */}
+        <div className="absolute top-28 left-8 text-outline/35 font-mono text-[9px] pointer-events-none select-none hidden md:block">
+          [+] SYS.LOC: CH-02_SECT
+        </div>
+        <div className="absolute top-28 right-8 text-outline/35 font-mono text-[9px] pointer-events-none select-none hidden md:block">
+          GRID_RESOLUTION: 8PX // COMP_UNIT
+        </div>
+        <div className="absolute bottom-24 left-8 text-outline/35 font-mono text-[9px] pointer-events-none select-none hidden md:block">
+          CALIBRATION_PT: 02.979_HZ
+        </div>
+        <div className="absolute bottom-24 right-8 text-outline/35 font-mono text-[9px] pointer-events-none select-none hidden md:block">
+          TELEMETRY_LINK: SECURE_128B
+        </div>
+
         {/* Title and Intro */}
         <div className="max-w-max-width mx-auto px-margin-edge w-full mb-12 flex-shrink-0">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
@@ -208,6 +249,57 @@ export const Events: React.FC<EventsProps> = ({ onJoinEvent }) => {
             {challengeEvents.map((event) => (
               <EventCard key={event.id} event={event} onJoinEvent={onJoinEvent} />
             ))}
+          </div>
+        </div>
+
+        {/* Technical Progress Bar & Telemetry Panel */}
+        <div className="max-w-max-width mx-auto px-margin-edge w-full mt-12 flex-shrink-0 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-outline/20 pt-8 z-10">
+          {/* Left: Real-time Coordinate Telemetry */}
+          <div className="flex gap-8 font-technical-numeral text-[10px] uppercase tracking-widest text-on-surface-variant w-full md:w-auto justify-between md:justify-start">
+            <div>
+              <span className="text-secondary block font-bold mb-1">AXIS_X_OFFSET</span>
+              <span ref={telemetryXRef} className="font-mono text-primary font-bold text-xs">0px</span>
+            </div>
+            <div>
+              <span className="text-secondary block font-bold mb-1">PROG_PERCENT</span>
+              <span ref={telemetryProgressRef} className="font-mono text-primary font-bold text-xs">0%</span>
+            </div>
+            <div>
+              <span className="text-secondary block font-bold mb-1">FOCUS_EVENT</span>
+              <span className="font-mono text-primary font-bold text-xs">
+                #<span ref={telemetryCardRef}>01</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Center: Sleek technical progress track with numeric guides */}
+          <div className="flex-grow max-w-md w-full flex flex-col gap-2">
+            <div className="h-2 w-full flex justify-between text-[8px] font-mono text-outline/50 select-none px-1">
+              <span>01</span>
+              <span>02</span>
+              <span>03</span>
+              <span>04</span>
+              <span>05</span>
+              <span>06</span>
+              <span>07</span>
+              <span>08</span>
+              <span>09</span>
+              <span>10</span>
+            </div>
+            <div className="relative h-[2px] bg-outline-variant/30 w-full overflow-hidden">
+              <div 
+                ref={progressLineRef} 
+                className="absolute left-0 top-0 h-full w-full bg-secondary origin-left" 
+                style={{ transform: 'scaleX(0)' }}
+              />
+            </div>
+          </div>
+
+          {/* Right: Technical Metadata Info */}
+          <div className="hidden md:flex font-label-caps text-[10px] tracking-widest text-on-surface-variant uppercase gap-4 items-center">
+            <span>SYS_PINNED: TRUE</span>
+            <span className="w-1.5 h-1.5 bg-secondary rounded-full animate-pulse" />
+            <span>DRAG_LOCK: AUTO</span>
           </div>
         </div>
       </div>
