@@ -8,6 +8,7 @@ const config = {
   cols: 7,
 };
 
+const CROWD_OFFSET_Y = 35;
 // UTILS
 const randomRange = (min: number, max: number) => min + Math.random() * (max - min);
 
@@ -101,7 +102,7 @@ const resetPeep = ({ stage, peep }: { stage: { width: number; height: number }; 
   // using an ease function to skew random to lower values to help hide that peeps have no legs
   const offsetY =
     offsetVarA - offsetVarB * gsap.parseEase("power2.in")(Math.random());
-  const startY = stage.height - peep.height + offsetY;
+  const startY = stage.height - peep.height + offsetY + CROWD_OFFSET_Y;
   let startX: number;
   let endX: number;
 
