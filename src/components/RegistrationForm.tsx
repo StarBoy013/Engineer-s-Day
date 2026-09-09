@@ -66,32 +66,64 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
 
+    if (selectedEvents.length === 0) {
+      alert("Please select at least one event to register.");
+      return;
+    }
+
     setIsSubmitting(true);
 
-    // Mock API transmission
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSuccess(true);
-      
-      // Reset form fields
-      setName("");
-      setRollNo("");
-      setDepartment("");
-      setPhone("");
-      setEmail("");
-      setTeamName("");
-      setTeamMembers([{ id: "1", name: "", rollNo: "" }]);
-      onChangeEvents([]);
+    const payload = {
+      name,
+      rollNo,
+      department,
+      phone,
+      email,
+      selectedEvents,
+      isTeamRegistration: showTeamFields,
+      teamName: showTeamFields ? teamName : "",
+      teamMembers: showTeamFields ? teamMembers.map((m) => ({ name: m.name, rollNo: m.rollNo })) : [],
+    };
 
-      // Reset success message after 2.5 seconds
-      setTimeout(() => {
-        setIsSuccess(false);
-      }, 2500);
-    }, 2500);
+    try {
+      const response = await fetch("/api/registrations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setIsSuccess(true);
+        // Reset form fields
+        setName("");
+        setRollNo("");
+        setDepartment("");
+        setPhone("");
+        setEmail("");
+        setTeamName("");
+        setTeamMembers([{ id: "1", name: "", rollNo: "" }]);
+        onChangeEvents([]);
+
+        setTimeout(() => {
+          setIsSuccess(false);
+        }, 3000);
+      } else {
+        alert(data.message || "Failed to submit registration.");
+      }
+    } catch (error) {
+      console.error("[Registration Error]:", error);
+      alert("Error connecting to backend server. Make sure your Express server is running.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
