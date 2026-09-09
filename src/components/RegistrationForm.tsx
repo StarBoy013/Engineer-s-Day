@@ -90,7 +90,8 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
     };
 
     try {
-      const response = await fetch("/api/registrations", {
+      const API_BASE = import.meta.env.VITE_API_URL || "";
+      const response = await fetch(`${API_BASE}/api/registrations`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
