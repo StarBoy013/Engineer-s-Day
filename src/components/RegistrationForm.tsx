@@ -21,7 +21,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
   const [department, setDepartment] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  
+
   // Team states
   const [teamName, setTeamName] = useState("");
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
@@ -90,7 +90,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
     };
 
     try {
-      const API_BASE = import.meta.env.API_URL || "";
+      const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
       const response = await fetch(`${API_BASE}/api/registrations`, {
         method: "POST",
         headers: {
@@ -139,7 +139,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               Secure your place at the Engineers Day celebrations. Fill in your academic details and select your events below.
             </p>
           </div>
-          
+
           <div className="space-y-6 pt-6 border-t border-primary/20">
             <div className="flex items-center gap-4 text-on-surface-variant">
               <span className="material-symbols-outlined text-secondary select-none">
