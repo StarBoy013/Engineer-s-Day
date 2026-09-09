@@ -6,23 +6,34 @@ yarn-debug.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+server/node_modules
+
+# Build output
 dist
 dist-ssr
-*.local
 
-# Environment variables
+# Environment variables — never commit secrets
 .env
 .env.*
 !.env.example
+!.env.production.example
 
-# Editor directories and files
+# Lock files (optional to include, but excluding server one to avoid bloat)
+server/package-lock.json
+
+# OS / Editor files
 .vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Local temp
+*.local
