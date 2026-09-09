@@ -111,10 +111,6 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
         setTeamName("");
         setTeamMembers([{ id: "1", name: "", rollNo: "" }]);
         onChangeEvents([]);
-
-        setTimeout(() => {
-          setIsSuccess(false);
-        }, 3000);
       } else {
         alert(data.message || "Failed to submit registration.");
       }
@@ -165,244 +161,279 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
 
         {/* Right Form Card */}
         <div className="md:w-1/2">
-          <div className="relative border border-primary p-1 bg-background hard-shadow">
-            <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
-              {/* Row 1: Full Name & Roll No */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="relative bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-2 bg-surface">
-                  <label className="block font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant px-2 mb-1 font-bold">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-transparent border-t-0 border-x-0 border-b-2 border-primary focus:ring-0 focus:border-secondary focus:outline-none transition-colors font-body-md py-2 px-2 text-primary placeholder:text-outline-variant font-serif text-base sm:text-lg"
-                    placeholder="e.g. John Doe"
-                  />
+          <div className="relative border border-primary p-1 bg-background hard-shadow min-h-[480px] flex flex-col justify-center">
+            {isSuccess ? (
+              /* Success View - Form Hidden */
+              <div className="p-8 sm:p-12 flex flex-col items-center justify-center text-center space-y-6 animate-fade-in">
+                <div className="w-20 h-20 rounded-full bg-green-500/10 border-2 border-green-600 flex items-center justify-center animate-bounce-slow">
+                  <span className="material-symbols-outlined text-5xl text-green-600 select-none">
+                    check_circle
+                  </span>
                 </div>
 
-                <div className="relative bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-2 bg-surface">
-                  <label className="block font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant px-2 mb-1 font-bold">
-                    Roll No.
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={rollNo}
-                    onChange={(e) => setRollNo(e.target.value)}
-                    className="w-full bg-transparent border-t-0 border-x-0 border-b-2 border-primary focus:ring-0 focus:border-secondary focus:outline-none transition-colors font-body-md py-2 px-2 text-primary placeholder:text-outline-variant font-serif text-base sm:text-lg"
-                    placeholder="e.g. 2x-xxx-xxx"
-                  />
-                </div>
-              </div>
-
-              {/* Row 2: Department & Phone No */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="relative bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-2 bg-surface">
-                  <label className="block font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant px-2 mb-1 font-bold">
-                    Department (Dept.)
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
-                    className="w-full bg-transparent border-t-0 border-x-0 border-b-2 border-primary focus:ring-0 focus:border-secondary focus:outline-none transition-colors font-body-md py-2 px-2 text-primary placeholder:text-outline-variant font-serif text-base sm:text-lg"
-                    placeholder="e.g. CSE / Mechanical"
-                  />
+                <div>
+                  <span className="font-label-caps text-xs text-secondary tracking-[0.3em] uppercase block mb-2 font-bold">
+                    SYSTEM CONFIRMATION
+                  </span>
+                  <h3 className="font-headline-lg text-2xl sm:text-3xl uppercase text-primary font-bold">
+                    Successful Registration!
+                  </h3>
                 </div>
 
-                <div className="relative bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-2 bg-surface">
-                  <label className="block font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant px-2 mb-1 font-bold">
-                    Phone No.
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full bg-transparent border-t-0 border-x-0 border-b-2 border-primary focus:ring-0 focus:border-secondary focus:outline-none transition-colors font-body-md py-2 px-2 text-primary placeholder:text-outline-variant font-serif text-base sm:text-lg"
-                    placeholder="e.g. 98783 10681"
-                  />
-                </div>
-              </div>
+                <p className="font-body-md text-on-surface-variant max-w-md font-serif text-base sm:text-lg leading-relaxed">
+                  Your event registration has been successfully received and recorded in the system database. We look forward to your participation at Engineer's Day!
+                </p>
 
-              {/* Email Address */}
-              <div className="relative bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-2 bg-surface">
-                <label className="block font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant px-2 mb-1 font-bold">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-transparent border-t-0 border-x-0 border-b-2 border-primary focus:ring-0 focus:border-secondary focus:outline-none transition-colors font-body-md py-2 px-2 text-primary placeholder:text-outline-variant font-serif text-base sm:text-lg"
-                  placeholder="email@organization.com"
-                />
-              </div>
-
-              {/* Event Checklist Multi-Select */}
-              <div className="relative bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-4 bg-surface-container-low">
-                <label className="block font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant mb-4 px-2 font-bold">
-                  Event Participation (Multi-Select)
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                  {challengeEvents.map((event) => (
-                    <label key={event.id} className="flex items-center gap-3 cursor-pointer group">
-                      <input
-                        type="checkbox"
-                        checked={selectedEvents.includes(event.id)}
-                        onChange={(e) => handleCheckboxChange(event.id, e.target.checked)}
-                        className="w-4 h-4 border-2 border-primary rounded-none text-secondary focus:ring-0 focus:ring-offset-0 transition-colors accent-secondary bg-surface"
-                      />
-                      <span className="font-body-md text-[13px] text-on-surface-variant group-hover:text-primary transition-colors font-semibold flex items-center justify-between w-full pr-2">
-                        <span>{event.id}: {event.title}</span>
-                        {event.isTeamEvent && (
-                          <span className="text-[9px] font-mono text-secondary font-bold">TEAM</span>
-                        )}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Dynamic Team Fields */}
-              {showTeamFields && (
-                <div className="space-y-6 transition-all duration-300 border-t border-primary/20 pt-6">
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-label-caps text-xs uppercase tracking-widest text-primary font-bold flex items-center gap-2">
-                      <span className="material-symbols-outlined text-secondary text-base">groups</span>
-                      Team Details (1 to 4 Members)
-                    </h3>
-                    <span className="font-mono text-xs text-secondary font-bold bg-secondary/10 px-2.5 py-1 border border-secondary/30">
-                      {teamMembers.length} / 4 Members
-                    </span>
+                <div className="w-full bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-4 bg-surface border border-primary/20 text-left font-mono text-xs text-on-surface-variant space-y-1.5">
+                  <div className="flex justify-between">
+                    <span className="text-secondary font-bold">STATUS:</span>
+                    <span className="text-green-600 font-bold">TRANSMISSION_CONFIRMED</span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-secondary font-bold">TIMESTAMP:</span>
+                    <span>{new Date().toLocaleString()}</span>
+                  </div>
+                </div>
 
-                  {/* Team Name */}
+                <button
+                  onClick={() => setIsSuccess(false)}
+                  className="mt-4 inline-flex items-center gap-2 font-label-caps text-xs tracking-widest text-primary hover:text-secondary transition-colors border-2 border-primary px-6 py-3 font-bold hover:border-secondary focus:outline-none bg-surface"
+                >
+                  <span className="material-symbols-outlined text-base">refresh</span>
+                  REGISTER ANOTHER PARTICIPANT
+                </button>
+              </div>
+            ) : (
+              /* Active Registration Form */
+              <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
+                {/* Row 1: Full Name & Roll No */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="relative bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-2 bg-surface">
-                    <label className="block font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant mb-1 px-2 font-bold">
-                      Team Name
+                    <label className="block font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant px-2 mb-1 font-bold">
+                      Full Name
                     </label>
                     <input
                       type="text"
                       required
-                      value={teamName}
-                      onChange={(e) => setTeamName(e.target.value)}
-                      className="w-full bg-transparent border-t-0 border-x-0 border-b-2 border-primary focus:ring-0 focus:border-secondary focus:outline-none transition-colors font-body-md py-2 px-2 text-primary placeholder:text-outline-variant font-serif text-lg"
-                      placeholder="e.g. Apex Dynamics"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full bg-transparent border-t-0 border-x-0 border-b-2 border-primary focus:ring-0 focus:border-secondary focus:outline-none transition-colors font-body-md py-2 px-2 text-primary placeholder:text-outline-variant font-serif text-base sm:text-lg"
+                      placeholder="e.g. John Doe"
                     />
                   </div>
 
-                  {/* Dynamic Team Members List */}
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center px-1">
-                      <span className="font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">
-                        Team Members Roster
-                      </span>
-
-                      {/* Add Member Button with + Icon */}
-                      <button
-                        type="button"
-                        onClick={handleAddMember}
-                        disabled={teamMembers.length >= 4}
-                        className="inline-flex items-center gap-1.5 font-label-caps text-[11px] tracking-wider text-secondary hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-bold focus:outline-none border border-secondary/40 hover:border-secondary px-3 py-1 bg-surface"
-                      >
-                        <span className="material-symbols-outlined text-base font-bold">add</span>
-                        ADD MEMBER
-                      </button>
-                    </div>
-
-                    {teamMembers.map((member, index) => (
-                      <div
-                        key={member.id}
-                        className="relative bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-3 bg-surface border border-primary/15 space-y-3"
-                      >
-                        <div className="flex justify-between items-center border-b border-primary/10 pb-2">
-                          <span className="font-label-caps text-[10px] text-secondary font-bold uppercase tracking-wider">
-                            {index === 0 ? "Member 1 (Team Leader)" : `Member ${index + 1}`}
-                          </span>
-                          {teamMembers.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveMember(member.id)}
-                              className="text-on-surface-variant hover:text-red-600 transition-colors focus:outline-none flex items-center gap-1 text-[10px] font-label-caps uppercase"
-                              title="Remove Member"
-                            >
-                              <span className="material-symbols-outlined text-base">delete</span>
-                              Remove
-                            </button>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block font-label-caps text-[9px] uppercase tracking-widest text-on-surface-variant mb-1 font-bold">
-                              Member Name
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              value={member.name}
-                              onChange={(e) => handleMemberChange(member.id, "name", e.target.value)}
-                              className="w-full bg-transparent border-t-0 border-x-0 border-b border-primary/40 focus:border-secondary focus:outline-none font-serif text-sm py-1 text-primary placeholder:text-outline-variant"
-                              placeholder={index === 0 ? "e.g. John Doe (Leader)" : `Member ${index + 1} Name`}
-                            />
-                          </div>
-                          <div>
-                            <label className="block font-label-caps text-[9px] uppercase tracking-widest text-on-surface-variant mb-1 font-bold">
-                              Member Roll No.
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              value={member.rollNo}
-                              onChange={(e) => handleMemberChange(member.id, "rollNo", e.target.value)}
-                              className="w-full bg-transparent border-t-0 border-x-0 border-b border-primary/40 focus:border-secondary focus:outline-none font-serif text-sm py-1 text-primary placeholder:text-outline-variant"
-                              placeholder="e.g. 2x-xxx-xxx"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
-                    {teamMembers.length >= 4 && (
-                      <p className="text-[11px] font-label-caps text-secondary font-bold tracking-widest uppercase text-right">
-                        MAXIMUM 4 TEAM MEMBERS REACHED
-                      </p>
-                    )}
+                  <div className="relative bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-2 bg-surface">
+                    <label className="block font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant px-2 mb-1 font-bold">
+                      Roll No.
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={rollNo}
+                      onChange={(e) => setRollNo(e.target.value)}
+                      className="w-full bg-transparent border-t-0 border-x-0 border-b-2 border-primary focus:ring-0 focus:border-secondary focus:outline-none transition-colors font-body-md py-2 px-2 text-primary placeholder:text-outline-variant font-serif text-base sm:text-lg"
+                      placeholder="e.g. 2x-xxx-xxx"
+                    />
                   </div>
                 </div>
-              )}
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="group/btn relative w-full bg-secondary text-on-secondary font-label-caps text-label-caps tracking-[0.2em] transition-all hover:bg-primary hover:text-on-primary active:scale-95 uppercase flex items-center justify-center gap-3 overflow-hidden py-4 border border-secondary hover:border-primary disabled:opacity-75 font-bold"
-              >
-                <span className="btn-text">
-                  {isSubmitting
-                    ? "Transmitting..."
-                    : isSuccess
-                    ? "Transmission Complete"
-                    : "Transmit Registration"}
-                </span>
-                {isSubmitting && (
-                  <span className="material-symbols-outlined spin-gear select-none">
-                    settings
-                  </span>
+                {/* Row 2: Department & Phone No */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="relative bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-2 bg-surface">
+                    <label className="block font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant px-2 mb-1 font-bold">
+                      Department (Dept.)
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={department}
+                      onChange={(e) => setDepartment(e.target.value)}
+                      className="w-full bg-transparent border-t-0 border-x-0 border-b-2 border-primary focus:ring-0 focus:border-secondary focus:outline-none transition-colors font-body-md py-2 px-2 text-primary placeholder:text-outline-variant font-serif text-base sm:text-lg"
+                      placeholder="e.g. CSE / Mechanical"
+                    />
+                  </div>
+
+                  <div className="relative bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-2 bg-surface">
+                    <label className="block font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant px-2 mb-1 font-bold">
+                      Phone No.
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full bg-transparent border-t-0 border-x-0 border-b-2 border-primary focus:ring-0 focus:border-secondary focus:outline-none transition-colors font-body-md py-2 px-2 text-primary placeholder:text-outline-variant font-serif text-base sm:text-lg"
+                      placeholder="e.g. 98783 10681"
+                    />
+                  </div>
+                </div>
+
+                {/* Email Address */}
+                <div className="relative bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-2 bg-surface">
+                  <label className="block font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant px-2 mb-1 font-bold">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-transparent border-t-0 border-x-0 border-b-2 border-primary focus:ring-0 focus:border-secondary focus:outline-none transition-colors font-body-md py-2 px-2 text-primary placeholder:text-outline-variant font-serif text-base sm:text-lg"
+                    placeholder="email@organization.com"
+                  />
+                </div>
+
+                {/* Event Checklist Multi-Select */}
+                <div className="relative bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-4 bg-surface-container-low">
+                  <label className="block font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant mb-4 px-2 font-bold">
+                    Event Participation (Multi-Select)
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                    {challengeEvents.map((event) => (
+                      <label key={event.id} className="flex items-center gap-3 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={selectedEvents.includes(event.id)}
+                          onChange={(e) => handleCheckboxChange(event.id, e.target.checked)}
+                          className="w-4 h-4 border-2 border-primary rounded-none text-secondary focus:ring-0 focus:ring-offset-0 transition-colors accent-secondary bg-surface"
+                        />
+                        <span className="font-body-md text-[13px] text-on-surface-variant group-hover:text-primary transition-colors font-semibold flex items-center justify-between w-full pr-2">
+                          <span>{event.id}: {event.title}</span>
+                          {event.isTeamEvent && (
+                            <span className="text-[9px] font-mono text-secondary font-bold">TEAM</span>
+                          )}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Dynamic Team Fields */}
+                {showTeamFields && (
+                  <div className="space-y-6 transition-all duration-300 border-t border-primary/20 pt-6">
+                    <div className="flex justify-between items-center">
+                      <h3 className="font-label-caps text-xs uppercase tracking-widest text-primary font-bold flex items-center gap-2">
+                        <span className="material-symbols-outlined text-secondary text-base">groups</span>
+                        Team Details (1 to 4 Members)
+                      </h3>
+                      <span className="font-mono text-xs text-secondary font-bold bg-secondary/10 px-2.5 py-1 border border-secondary/30">
+                        {teamMembers.length} / 4 Members
+                      </span>
+                    </div>
+
+                    {/* Team Name */}
+                    <div className="relative bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-2 bg-surface">
+                      <label className="block font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant mb-1 px-2 font-bold">
+                        Team Name
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={teamName}
+                        onChange={(e) => setTeamName(e.target.value)}
+                        className="w-full bg-transparent border-t-0 border-x-0 border-b-2 border-primary focus:ring-0 focus:border-secondary focus:outline-none transition-colors font-body-md py-2 px-2 text-primary placeholder:text-outline-variant font-serif text-lg"
+                        placeholder="e.g. Apex Dynamics"
+                      />
+                    </div>
+
+                    {/* Dynamic Team Members List */}
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center px-1">
+                        <span className="font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">
+                          Team Members Roster
+                        </span>
+
+                        {/* Add Member Button with + Icon */}
+                        <button
+                          type="button"
+                          onClick={handleAddMember}
+                          disabled={teamMembers.length >= 4}
+                          className="inline-flex items-center gap-1.5 font-label-caps text-[11px] tracking-wider text-secondary hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-bold focus:outline-none border border-secondary/40 hover:border-secondary px-3 py-1 bg-surface"
+                        >
+                          <span className="material-symbols-outlined text-base font-bold">add</span>
+                          ADD MEMBER
+                        </button>
+                      </div>
+
+                      {teamMembers.map((member, index) => (
+                        <div
+                          key={member.id}
+                          className="relative bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-3 bg-surface border border-primary/15 space-y-3"
+                        >
+                          <div className="flex justify-between items-center border-b border-primary/10 pb-2">
+                            <span className="font-label-caps text-[10px] text-secondary font-bold uppercase tracking-wider">
+                              {index === 0 ? "Member 1 (Team Leader)" : `Member ${index + 1}`}
+                            </span>
+                            {teamMembers.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveMember(member.id)}
+                                className="text-on-surface-variant hover:text-red-600 transition-colors focus:outline-none flex items-center gap-1 text-[10px] font-label-caps uppercase"
+                                title="Remove Member"
+                              >
+                                <span className="material-symbols-outlined text-base">delete</span>
+                                Remove
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block font-label-caps text-[9px] uppercase tracking-widest text-on-surface-variant mb-1 font-bold">
+                                Member Name
+                              </label>
+                              <input
+                                type="text"
+                                required
+                                value={member.name}
+                                onChange={(e) => handleMemberChange(member.id, "name", e.target.value)}
+                                className="w-full bg-transparent border-t-0 border-x-0 border-b border-primary/40 focus:border-secondary focus:outline-none font-serif text-sm py-1 text-primary placeholder:text-outline-variant"
+                                placeholder={index === 0 ? "e.g. John Doe (Leader)" : `Member ${index + 1} Name`}
+                              />
+                            </div>
+                            <div>
+                              <label className="block font-label-caps text-[9px] uppercase tracking-widest text-on-surface-variant mb-1 font-bold">
+                                Member Roll No.
+                              </label>
+                              <input
+                                type="text"
+                                required
+                                value={member.rollNo}
+                                onChange={(e) => handleMemberChange(member.id, "rollNo", e.target.value)}
+                                className="w-full bg-transparent border-t-0 border-x-0 border-b border-primary/40 focus:border-secondary focus:outline-none font-serif text-sm py-1 text-primary placeholder:text-outline-variant"
+                                placeholder="e.g. 2x-xxx-xxx"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                      {teamMembers.length >= 4 && (
+                        <p className="text-[11px] font-label-caps text-secondary font-bold tracking-widest uppercase text-right">
+                          MAXIMUM 4 TEAM MEMBERS REACHED
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 )}
-                {isSuccess && !isSubmitting && (
-                  <span className="material-symbols-outlined select-none text-green-500">
-                    check_circle
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="group/btn relative w-full bg-secondary text-on-secondary font-label-caps text-label-caps tracking-[0.2em] transition-all hover:bg-primary hover:text-on-primary active:scale-95 uppercase flex items-center justify-center gap-3 overflow-hidden py-4 border border-secondary hover:border-primary disabled:opacity-75 font-bold"
+                >
+                  <span className="btn-text">
+                    {isSubmitting ? "Transmitting Registration..." : "Transmit Registration"}
                   </span>
-                )}
-              </button>
-            </form>
+                  {isSubmitting && (
+                    <span className="material-symbols-outlined spin-gear select-none">
+                      settings
+                    </span>
+                  )}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>

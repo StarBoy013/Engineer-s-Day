@@ -135,14 +135,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   </span>
                 </a>
 
-                <div className="flex items-center gap-3 text-on-surface-variant text-sm font-sans">
+                {/* <div className="flex items-center gap-3 text-on-surface-variant text-sm font-sans">
                   <span className="material-symbols-outlined text-secondary text-lg select-none">
                     school
                   </span>
                   <span className="font-serif text-xs sm:text-sm">
                     RIMT University
                   </span>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
@@ -150,9 +150,16 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
         {/* Footer Bottom Bar */}
         <div className="pt-8 border-t border-outline/20 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-label-caps text-on-surface-variant">
-          <p className="tracking-widest uppercase font-bold text-center sm:text-left">
-            © {new Date().getFullYear()} Engineers Day | RIMT University. All Rights Reserved.
-          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center sm:text-left">
+            <p className="tracking-widest uppercase font-bold">
+              © {new Date().getFullYear()} Engineers Day | RIMT University.
+            </p>
+            <span className="hidden sm:inline text-outline/30">•</span>
+            <span className="text-[10px] font-mono text-outline/60 hover:text-primary transition-colors cursor-default tracking-wide font-normal">
+              Designed &amp; Developed by <span className="font-semibold text-on-surface-variant">Parikshit Jajwan - StarBoy</span>
+            </span>
+          </div>
+
           <div className="flex items-center gap-2 font-mono text-[10px] text-secondary font-bold">
             <span className="w-2 h-2 rounded-full bg-secondary animate-pulse inline-block"></span>
             REGISTRATION OPEN // ALL SYSTEMS GO
