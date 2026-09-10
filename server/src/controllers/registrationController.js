@@ -1,11 +1,22 @@
-﻿import { Registration } from "../models/Registration.js";
+import { Registration } from "../models/Registration.js";
 import { EVENT_CONFIG } from "../eventConfig.js";
+import { isRegistrationClosed } from "../registrationDeadline.js";
+
 
 // @desc    Store new event registration with participant-count validation
 // @route   POST /api/registrations
 // @access  Public
 export const createRegistration = async (req, res) => {
   try {
+    // ── Registration deadline check (server-side, timezone-safe) ─────────────
+    if (isRegistrationClosed()) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Registrations are closed. If you still want to register, kindly contact the Event Coordinator.",
+      });
+    }
+
     const {
       name,
       rollNo,

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { challengeEvents } from "./Events";
 import { EVENT_CONFIG, participantBadgeText } from "../eventConfig";
+import { isRegistrationClosed, DEADLINE_DISPLAY } from "../registrationDeadline";
 
 interface TeamMember {
   id: string;
@@ -75,6 +76,41 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  // ── Registration deadline — live check updated every second ──────────────
+  const [isClosed, setIsClosed] = useState(() => isRegistrationClosed());
+
+  // Compute time remaining until deadline
+  const computeTimeLeft = () => {
+    const deadline = new Date("2026-09-13T18:29:00.000Z").getTime();
+    const diff = deadline - Date.now();
+    if (diff <= 0) return null;
+    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const s = Math.floor((diff % (1000 * 60)) / 1000);
+    return {
+      d: String(d).padStart(2, "0"),
+      h: String(h).padStart(2, "0"),
+      m: String(m).padStart(2, "0"),
+      s: String(s).padStart(2, "0"),
+    };
+  };
+
+  const [timeToClose, setTimeToClose] = useState(computeTimeLeft);
+
+  useEffect(() => {
+    if (isClosed) return;
+    const tick = setInterval(() => {
+      const left = computeTimeLeft();
+      setTimeToClose(left);
+      if (!left) {
+        setIsClosed(true);
+        clearInterval(tick);
+      }
+    }, 1000);
+    return () => clearInterval(tick);
+  }, [isClosed]);
+
   // Derive constraints from the current event selection
   const { needsTeam, minParticipants, maxParticipants, label } =
     deriveConstraints(selectedEvents);
@@ -147,11 +183,17 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
   };
 
   const isSubmitDisabled =
-    isSubmitting || (needsTeam && participantError !== "");
+    isSubmitting || isClosed || (needsTeam && participantError !== "");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitDisabled) return;
+
+    // Final client-side deadline guard (edge case: tab left open past midnight)
+    if (isRegistrationClosed()) {
+      setIsClosed(true);
+      return;
+    }
 
     if (selectedEvents.length === 0) {
       alert("Please select an event to register.");
@@ -236,12 +278,51 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
           </div>
 
           <div className="space-y-6 pt-6 border-t border-primary/20">
+            {/* Registration Closes Countdown */}
+            {!isClosed && timeToClose && (
+              <div className="space-y-2">
+                <span className="font-label-caps text-[10px] uppercase tracking-widest text-secondary font-bold flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-sm select-none">timer</span>
+                  Registration Closes In
+                </span>
+                <div className="flex items-center gap-3">
+                  {[
+                    { val: timeToClose.d, label: "DAYS" },
+                    { val: timeToClose.h, label: "HRS" },
+                    { val: timeToClose.m, label: "MINS" },
+                    { val: timeToClose.s, label: "SECS" },
+                  ].map(({ val, label }, i, arr) => (
+                    <React.Fragment key={label}>
+                      <div className="flex flex-col items-center min-w-[36px]">
+                        <span className="font-technical-numeral text-2xl text-primary leading-none font-light">
+                          {val}
+                        </span>
+                        <span className="font-label-caps text-[8px] tracking-widest text-on-surface-variant mt-1 font-bold">
+                          {label}
+                        </span>
+                      </div>
+                      {i < arr.length - 1 && (
+                        <span className="text-outline/50 text-lg font-light mb-3">:</span>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+            )}
+            {isClosed && (
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-red-500 text-base select-none">lock</span>
+                <span className="font-label-caps text-[10px] uppercase tracking-widest text-red-500 font-bold">
+                  Registrations Closed
+                </span>
+              </div>
+            )}
             <div className="flex items-center gap-4 text-on-surface-variant">
               <span className="material-symbols-outlined text-secondary select-none">
                 calendar_today
               </span>
               <span className="font-label-caps text-xs sm:text-label-caps tracking-widest font-bold">
-                September 15, 2026
+                September 13, 2026
               </span>
             </div>
             <div className="flex items-center gap-4 text-on-surface-variant">
@@ -258,7 +339,45 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
         {/* Right Form Card */}
         <div className="md:w-1/2">
           <div className="relative border border-primary p-1 bg-background hard-shadow min-h-[480px] flex flex-col justify-center">
-            {isSuccess ? (
+            {isClosed ? (
+              /* ── Registrations Closed View ── */
+              <div className="p-8 sm:p-12 flex flex-col items-center justify-center text-center space-y-6 animate-fade-in">
+                <div className="w-20 h-20 rounded-full bg-secondary/10 border-2 border-secondary flex items-center justify-center">
+                  <span className="material-symbols-outlined text-5xl text-secondary select-none">
+                    lock
+                  </span>
+                </div>
+
+                <div>
+                  <span className="font-label-caps text-xs text-secondary tracking-[0.3em] uppercase block mb-2 font-bold">
+                    PORTAL STATUS
+                  </span>
+                  <h3 className="font-headline-lg text-2xl sm:text-3xl uppercase text-primary font-bold">
+                    Registrations Closed
+                  </h3>
+                </div>
+
+                <p className="font-body-md text-on-surface-variant max-w-sm font-serif text-base sm:text-lg leading-relaxed">
+                  Registrations are now closed.
+                </p>
+
+                <div className="w-full bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-4 bg-surface border border-primary/20 text-left font-mono text-xs text-on-surface-variant space-y-1.5">
+                  <div className="flex justify-between gap-4">
+                    <span className="text-secondary font-bold flex-shrink-0">DEADLINE:</span>
+                    <span>{DEADLINE_DISPLAY}</span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-secondary font-bold flex-shrink-0">STATUS:</span>
+                    <span className="text-red-600 font-bold">PORTAL_LOCKED</span>
+                  </div>
+                </div>
+
+                <p className="font-body-md text-on-surface-variant max-w-sm font-serif text-base leading-relaxed">
+                  If you still want to register, kindly contact the{" "}
+                  <span className="font-bold text-primary">Event Coordinator</span>.
+                </p>
+              </div>
+            ) : isSuccess ? (
               /* Success View */
               <div className="p-8 sm:p-12 flex flex-col items-center justify-center text-center space-y-6 animate-fade-in">
                 <div className="w-20 h-20 rounded-full bg-green-500/10 border-2 border-green-600 flex items-center justify-center animate-bounce-slow">

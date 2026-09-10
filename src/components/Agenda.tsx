@@ -7,19 +7,19 @@ export const agendaItems: AgendaItem[] = [
     time: "10:00 AM - 10:30 AM",
     hourLabel: "10",
     title: "Inaugural Assembly",
-    description: "A foundational address on the ethical dimensions of artificial intelligence in mechanical systems and urban planning.",
+    description: "A ceremonial opening marking the beginning of the event, featuring the welcome address, introduction of the theme, and inaugural proceedings.",
   },
   {
     time: "11:00 AM - 1:00 PM",
     hourLabel: "11",
     title: "Events",
-    description: "Deep-dive technical session exploring the stress-testing of sustainable composite materials for high-altitude structures.",
+    description: "A vibrant lineup of competitions and activities designed to showcase creativity, technical skills, teamwork, and innovation.",
   },
   {
     time: "03:00 PM onwards",
     hourLabel: "15",
-    title: "The Human Infrastructure",
-    description: "A cross-disciplinary discussion on the intersection of human-centric design and industrial efficiency.",
+    title: "Valedictory",
+    description: "A celebratory closing ceremony honoring the participants, recognizing outstanding achievements, and bringing the event to a memorable conclusion.",
   },
 ];
 
