@@ -17,7 +17,5 @@ export interface AgendaItem {
   time: string;
   hourLabel: string;
   title: string;
-  category: string;
-  location: string;
   description: string;
 }

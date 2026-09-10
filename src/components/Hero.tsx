@@ -90,12 +90,16 @@ export const Hero: React.FC = () => {
             className="font-display-lg text-4xl sm:text-6xl md:text-[84px] text-primary uppercase tracking-tighter transition-all duration-700 ease-out select-none"
             style={{ opacity: 1 }}
           >
-            National Engineers Day
+            National Engineers' Day
           </h1>
         </div>
         
-        <p className="font-body-lg text-lg sm:text-xl md:text-body-lg text-on-surface-variant mb-12">
+        <p className="font-body-lg text-lg sm:text-xl md:text-body-lg text-on-surface-variant mb-3">
           Celebrating the minds that build the future.
+        </p>
+
+        <p className="font-label-caps text-sm sm:text-base tracking-widest text-secondary font-bold uppercase mb-10 select-none">
+          School of Engineering &amp; Technology
         </p>
 
         {/* Countdown Timer */}

@@ -1,5 +1,6 @@
 import React from "react";
 import type { ChallengeEvent } from "../types";
+import { participantBadgeText } from "../eventConfig";
 
 interface EventsProps {
   onJoinEvent: (eventId: string) => void;
@@ -15,27 +16,34 @@ export const challengeEvents: ChallengeEvent[] = [
   },
   {
     id: "02",
-    title: "Digi mania",
+    title: "Digi Mania- AI Prompt",
     description: "Showcase digital creativity, UI/UX conceptualization, digital media designs, and technical graphics in an engaging clash.",
     icon: "devices",
     isTeamEvent: false,
   },
   {
     id: "03",
+    title: "Digi Mania- Game Developer",
+    description: "Showcase digital creativity, UI/UX conceptualization, digital media designs, and technical graphics in an engaging clash.",
+    icon: "devices",
+    isTeamEvent: false,
+  },
+  {
+    id: "04",
     title: "Poster Making",
     description: "Express future engineering concepts, sustainability innovations, and tech breakthroughs through visual poster art.",
     icon: "palette",
     isTeamEvent: false,
   },
   {
-    id: "04",
+    id: "05",
     title: "Quiz Competition",
     description: "Test your speed, analytical aptitude, and knowledge across general engineering, historic inventions, and emerging tech.",
     icon: "quiz",
     isTeamEvent: true,
   },
   {
-    id: "05",
+    id: "06",
     title: "Reel Making",
     description: "Capture the essence of innovation, engineering campus life, and technology in creative short video reels.",
     icon: "movie",
@@ -60,15 +68,13 @@ const EventCard: React.FC<{
           {event.icon}
         </span>
 
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
           <h3 className="font-headline-md text-xl md:text-2xl uppercase text-primary">
             {event.title}
           </h3>
-          {event.isTeamEvent && (
-            <span className="font-label-caps text-[9px] uppercase px-2 py-0.5 bg-secondary/10 text-secondary border border-secondary/30 font-bold select-none">
-              TEAM
-            </span>
-          )}
+          <span className="font-label-caps text-[9px] uppercase px-2 py-0.5 bg-secondary/10 text-secondary border border-secondary/30 font-bold select-none whitespace-nowrap">
+            {participantBadgeText(event.id)}
+          </span>
         </div>
         
         <p className="font-body-md text-on-surface-variant leading-relaxed text-sm md:text-base mb-8">

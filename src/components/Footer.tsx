@@ -20,7 +20,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate("top")}
                   className="font-headline-md text-2xl font-bold text-primary hover:text-secondary transition-colors focus:outline-none text-left tracking-tight"
                 >
-                  ENGINEERS DAY '26
+                  ENGINEERS' DAY
                 </button>
               </div>
               
@@ -102,7 +102,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 </span>
                 <div>
                   <span className="font-label-caps text-[9px] uppercase tracking-widest text-on-surface-variant block font-bold">
-                    Event Coordinator
+                    Student Coordinator
                   </span>
                   <span className="font-headline-md text-base text-primary font-bold">
                     Parikshit Jajwan

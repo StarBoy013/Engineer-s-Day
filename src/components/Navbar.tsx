@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import rimtLogo from "../assets/RIMT-LOGO.jpg";
 
 interface NavbarProps {
   onRegisterClick: () => void;
@@ -58,8 +59,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onRegisterClick }) => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-sm border-b border-outline/20">
       <nav className="flex justify-between items-center w-full px-margin-edge py-4 max-w-max-width mx-auto">
-        <div className="font-headline-md text-xl md:text-2xl font-bold tracking-tighter text-primary select-none">
-          ENGINEERS DAY
+        {/* Brand: Mobile = logo only; Tablet/Desktop = logo + text */}
+        <div className="flex items-center gap-3">
+          {/* RIMT Logo - shown on all screen sizes */}
+          <img
+            src={rimtLogo}
+            alt="RIMT University"
+            className="h-9 md:h-11 w-auto object-contain flex-shrink-0"
+          />
+          {/* "ENGINEERS DAY" text - hidden on mobile, visible on tablet/desktop */}
+          <span className="hidden md:block font-headline-md text-xl md:text-2xl font-bold tracking-tighter text-primary select-none">
+            ENGINEERS DAY
+          </span>
         </div>
 
         {/* Desktop Navigation Links */}

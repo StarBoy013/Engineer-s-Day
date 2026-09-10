@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { challengeEvents } from "./Events";
+import { EVENT_CONFIG, participantBadgeText } from "../eventConfig";
 
 interface TeamMember {
   id: string;
@@ -10,6 +11,48 @@ interface TeamMember {
 interface RegistrationFormProps {
   selectedEvents: string[];
   onChangeEvents: (eventIds: string[]) => void;
+}
+
+/**
+ * Derive the effective participant constraints for the current selection.
+ * Each event enforces its own min/max independently.
+ * When multiple events are selected, we require the strictest combined rules:
+ *   - maxParticipants = lowest max across all selected events
+ *   - minParticipants = highest min across all selected events
+ * If only solo events are selected, show solo UI.
+ * If any team event is selected, show team UI.
+ */
+function deriveConstraints(selectedIds: string[]) {
+  if (selectedIds.length === 0) {
+    return { needsTeam: false, minParticipants: 1, maxParticipants: 1, label: "" };
+  }
+
+  let minParticipants = 1;
+  let maxParticipants = Infinity;
+  let hasTeam = false;
+
+  for (const id of selectedIds) {
+    const cfg = EVENT_CONFIG[id];
+    if (!cfg) continue;
+    if (cfg.type === "team") hasTeam = true;
+    minParticipants = Math.max(minParticipants, cfg.minParticipants);
+    maxParticipants = Math.min(maxParticipants, cfg.maxParticipants);
+  }
+
+  // Clamp max to a sensible upper bound
+  if (!isFinite(maxParticipants)) maxParticipants = 4;
+
+  // Build a summary label for the header
+  let label = "";
+  if (!hasTeam) {
+    label = "Solo Event — 1 Participant";
+  } else if (minParticipants === maxParticipants) {
+    label = `Team Event — ${maxParticipants} Participant${maxParticipants > 1 ? "s" : ""}`;
+  } else {
+    label = `Team Event — ${minParticipants}–${maxParticipants} Participants`;
+  }
+
+  return { needsTeam: hasTeam, minParticipants, maxParticipants, label };
 }
 
 export const RegistrationForm: React.FC<RegistrationFormProps> = ({
@@ -28,25 +71,58 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
     { id: "1", name: "", rollNo: "" },
   ]);
 
+  const [participantError, setParticipantError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Check if any of the selected events is a team event
-  const showTeamFields = selectedEvents.some((id) => {
-    const ev = challengeEvents.find((e) => e.id === id);
-    return ev?.isTeamEvent ?? false;
-  });
+  // Derive constraints from the current event selection
+  const { needsTeam, minParticipants, maxParticipants, label } =
+    deriveConstraints(selectedEvents);
 
-  const handleCheckboxChange = (eventId: string, checked: boolean) => {
-    if (checked) {
-      onChangeEvents([...selectedEvents, eventId]);
-    } else {
-      onChangeEvents(selectedEvents.filter((id) => id !== eventId));
+  // When the selected events change, trim or reset team members to satisfy new constraints
+  useEffect(() => {
+    setParticipantError("");
+    if (!needsTeam) {
+      // Solo — always reset to 1 empty member slot (kept for data consistency, not rendered)
+      setTeamMembers([{ id: "1", name: "", rollNo: "" }]);
+      setTeamName("");
+      return;
     }
+    setTeamMembers((prev) => {
+      // Trim to maxParticipants
+      const trimmed = prev.slice(0, maxParticipants);
+      // Ensure at least 1 slot exists
+      if (trimmed.length === 0) return [{ id: Date.now().toString(), name: "", rollNo: "" }];
+      return trimmed;
+    });
+  }, [selectedEvents.join(","), needsTeam, maxParticipants]);
+
+  // Live participant count validation message
+  useEffect(() => {
+    if (!needsTeam) {
+      setParticipantError("");
+      return;
+    }
+    const count = teamMembers.length;
+    if (count < minParticipants) {
+      setParticipantError(
+        `This event requires at least ${minParticipants} participant${minParticipants > 1 ? "s" : ""}. Please add ${minParticipants - count} more.`
+      );
+    } else if (count > maxParticipants) {
+      setParticipantError(
+        `This event allows a maximum of ${maxParticipants} participant${maxParticipants > 1 ? "s" : ""}.`
+      );
+    } else {
+      setParticipantError("");
+    }
+  }, [teamMembers.length, needsTeam, minParticipants, maxParticipants]);
+
+  const handleRadioChange = (eventId: string) => {
+    onChangeEvents([eventId]);
   };
 
   const handleAddMember = () => {
-    if (teamMembers.length < 4) {
+    if (teamMembers.length < maxParticipants) {
       setTeamMembers((prev) => [
         ...prev,
         { id: Date.now().toString(), name: "", rollNo: "" },
@@ -60,19 +136,37 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
     }
   };
 
-  const handleMemberChange = (id: string, field: "name" | "rollNo", value: string) => {
+  const handleMemberChange = (
+    id: string,
+    field: "name" | "rollNo",
+    value: string
+  ) => {
     setTeamMembers((prev) =>
       prev.map((m) => (m.id === id ? { ...m, [field]: value } : m))
     );
   };
 
+  const isSubmitDisabled =
+    isSubmitting || (needsTeam && participantError !== "");
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return;
+    if (isSubmitDisabled) return;
 
     if (selectedEvents.length === 0) {
-      alert("Please select at least one event to register.");
+      alert("Please select an event to register.");
       return;
+    }
+
+    // Final frontend participant count guard
+    if (needsTeam) {
+      const count = teamMembers.length;
+      if (count < minParticipants || count > maxParticipants) {
+        setParticipantError(
+          `Please provide ${minParticipants === maxParticipants ? minParticipants : `${minParticipants}–${maxParticipants}`} participant(s) for the selected event(s).`
+        );
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -84,18 +178,18 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
       phone,
       email,
       selectedEvents,
-      isTeamRegistration: showTeamFields,
-      teamName: showTeamFields ? teamName : "",
-      teamMembers: showTeamFields ? teamMembers.map((m) => ({ name: m.name, rollNo: m.rollNo })) : [],
+      isTeamRegistration: needsTeam,
+      teamName: needsTeam ? teamName : "",
+      teamMembers: needsTeam
+        ? teamMembers.map((m) => ({ name: m.name, rollNo: m.rollNo }))
+        : [],
     };
 
     try {
       const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
       const response = await fetch(`${API_BASE}/api/registrations`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
@@ -103,7 +197,6 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
 
       if (response.ok && data.success) {
         setIsSuccess(true);
-        // Reset form fields
         setName("");
         setRollNo("");
         setDepartment("");
@@ -117,7 +210,9 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
       }
     } catch (error) {
       console.error("[Registration Error]:", error);
-      alert("Error connecting to backend server. Make sure your Express server is running.");
+      alert(
+        "Error connecting to backend server. Make sure your Express server is running."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -164,7 +259,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
         <div className="md:w-1/2">
           <div className="relative border border-primary p-1 bg-background hard-shadow min-h-[480px] flex flex-col justify-center">
             {isSuccess ? (
-              /* Success View - Form Hidden */
+              /* Success View */
               <div className="p-8 sm:p-12 flex flex-col items-center justify-center text-center space-y-6 animate-fade-in">
                 <div className="w-20 h-20 rounded-full bg-green-500/10 border-2 border-green-600 flex items-center justify-center animate-bounce-slow">
                   <span className="material-symbols-outlined text-5xl text-green-600 select-none">
@@ -287,40 +382,51 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                 {/* Event Checklist Multi-Select */}
                 <div className="relative bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-4 bg-surface-container-low">
                   <label className="block font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant mb-4 px-2 font-bold">
-                    Event Participation (Multi-Select)
+                    Select Event
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                     {challengeEvents.map((event) => (
-                      <label key={event.id} className="flex items-center gap-3 cursor-pointer group">
+                      <label key={event.id} className="flex items-start gap-3 cursor-pointer group">
                         <input
-                          type="checkbox"
+                          type="radio"
+                          name="event-selection"
                           checked={selectedEvents.includes(event.id)}
-                          onChange={(e) => handleCheckboxChange(event.id, e.target.checked)}
-                          className="w-4 h-4 border-2 border-primary rounded-none text-secondary focus:ring-0 focus:ring-offset-0 transition-colors accent-secondary bg-surface"
+                          onChange={() => handleRadioChange(event.id)}
+                          className="w-4 h-4 mt-0.5 border-2 border-primary rounded-full text-secondary focus:ring-0 focus:ring-offset-0 transition-colors accent-secondary bg-surface flex-shrink-0"
                         />
-                        <span className="font-body-md text-[13px] text-on-surface-variant group-hover:text-primary transition-colors font-semibold flex items-center justify-between w-full pr-2">
+                        <span className="font-body-md text-[13px] text-on-surface-variant group-hover:text-primary transition-colors font-semibold flex flex-col gap-0.5 w-full">
                           <span>{event.id}: {event.title}</span>
-                          {event.isTeamEvent && (
-                            <span className="text-[9px] font-mono text-secondary font-bold">TEAM</span>
-                          )}
+                          <span className="text-[9px] font-mono text-secondary font-bold tracking-wider">
+                            {participantBadgeText(event.id)}
+                          </span>
                         </span>
                       </label>
                     ))}
                   </div>
                 </div>
 
-                {/* Dynamic Team Fields */}
-                {showTeamFields && (
+                {/* Dynamic Participant Fields */}
+                {selectedEvents.length > 0 && needsTeam && (
                   <div className="space-y-6 transition-all duration-300 border-t border-primary/20 pt-6">
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center flex-wrap gap-2">
                       <h3 className="font-label-caps text-xs uppercase tracking-widest text-primary font-bold flex items-center gap-2">
                         <span className="material-symbols-outlined text-secondary text-base">groups</span>
-                        Team Details (1 to 4 Members)
+                        {label}
                       </h3>
-                      <span className="font-mono text-xs text-secondary font-bold bg-secondary/10 px-2.5 py-1 border border-secondary/30">
-                        {teamMembers.length} / 4 Members
+                      <span className={`font-mono text-xs font-bold px-2.5 py-1 border ${participantError ? "text-red-600 bg-red-50 border-red-300" : "text-secondary bg-secondary/10 border-secondary/30"}`}>
+                        {teamMembers.length} / {maxParticipants} Members
                       </span>
                     </div>
+
+                    {/* Participant count error */}
+                    {participantError && (
+                      <div className="flex items-start gap-2 bg-red-50 border border-red-200 px-3 py-2.5">
+                        <span className="material-symbols-outlined text-red-500 text-sm mt-0.5 select-none">error</span>
+                        <p className="font-label-caps text-[10px] text-red-600 font-bold tracking-wider uppercase leading-relaxed">
+                          {participantError}
+                        </p>
+                      </div>
+                    )}
 
                     {/* Team Name */}
                     <div className="relative bracket-border bracket-tl bracket-tr bracket-bl bracket-br p-2 bg-surface">
@@ -341,19 +447,20 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                     <div className="space-y-4">
                       <div className="flex justify-between items-center px-1">
                         <span className="font-label-caps text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">
-                          Team Members Roster
+                          Participants Roster
                         </span>
 
-                        {/* Add Member Button with + Icon */}
-                        <button
-                          type="button"
-                          onClick={handleAddMember}
-                          disabled={teamMembers.length >= 4}
-                          className="inline-flex items-center gap-1.5 font-label-caps text-[11px] tracking-wider text-secondary hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-bold focus:outline-none border border-secondary/40 hover:border-secondary px-3 py-1 bg-surface"
-                        >
-                          <span className="material-symbols-outlined text-base font-bold">add</span>
-                          ADD MEMBER
-                        </button>
+                        {/* Add Member Button */}
+                        {teamMembers.length < maxParticipants && (
+                          <button
+                            type="button"
+                            onClick={handleAddMember}
+                            className="inline-flex items-center gap-1.5 font-label-caps text-[11px] tracking-wider text-secondary hover:text-primary transition-colors font-bold focus:outline-none border border-secondary/40 hover:border-secondary px-3 py-1 bg-surface"
+                          >
+                            <span className="material-symbols-outlined text-base font-bold">add</span>
+                            ADD MEMBER
+                          </button>
+                        )}
                       </div>
 
                       {teamMembers.map((member, index) => (
@@ -363,14 +470,14 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                         >
                           <div className="flex justify-between items-center border-b border-primary/10 pb-2">
                             <span className="font-label-caps text-[10px] text-secondary font-bold uppercase tracking-wider">
-                              {index === 0 ? "Member 1 (Team Leader)" : `Member ${index + 1}`}
+                              {index === 0 ? "Participant 1 (Team Leader)" : `Participant ${index + 1}`}
                             </span>
-                            {teamMembers.length > 1 && (
+                            {teamMembers.length > Math.max(1, minParticipants - 1) && teamMembers.length > 1 && (
                               <button
                                 type="button"
                                 onClick={() => handleRemoveMember(member.id)}
                                 className="text-on-surface-variant hover:text-red-600 transition-colors focus:outline-none flex items-center gap-1 text-[10px] font-label-caps uppercase"
-                                title="Remove Member"
+                                title="Remove Participant"
                               >
                                 <span className="material-symbols-outlined text-base">delete</span>
                                 Remove
@@ -381,7 +488,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                               <label className="block font-label-caps text-[9px] uppercase tracking-widest text-on-surface-variant mb-1 font-bold">
-                                Member Name
+                                Name
                               </label>
                               <input
                                 type="text"
@@ -389,12 +496,12 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                                 value={member.name}
                                 onChange={(e) => handleMemberChange(member.id, "name", e.target.value)}
                                 className="w-full bg-transparent border-t-0 border-x-0 border-b border-primary/40 focus:border-secondary focus:outline-none font-serif text-sm py-1 text-primary placeholder:text-outline-variant"
-                                placeholder={index === 0 ? "e.g. John Doe (Leader)" : `Member ${index + 1} Name`}
+                                placeholder={index === 0 ? "e.g. John Doe (Leader)" : `Participant ${index + 1} Name`}
                               />
                             </div>
                             <div>
                               <label className="block font-label-caps text-[9px] uppercase tracking-widest text-on-surface-variant mb-1 font-bold">
-                                Member Roll No.
+                                Roll No.
                               </label>
                               <input
                                 type="text"
@@ -409,23 +516,33 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                         </div>
                       ))}
 
-                      {teamMembers.length >= 4 && (
+                      {teamMembers.length >= maxParticipants && (
                         <p className="text-[11px] font-label-caps text-secondary font-bold tracking-widest uppercase text-right">
-                          MAXIMUM 4 TEAM MEMBERS REACHED
+                          MAXIMUM {maxParticipants} PARTICIPANT{maxParticipants > 1 ? "S" : ""} REACHED
                         </p>
                       )}
                     </div>
                   </div>
                 )}
 
+                {/* Solo event indicator */}
+                {selectedEvents.length > 0 && !needsTeam && (
+                  <div className="flex items-center gap-2 border-t border-primary/20 pt-4">
+                    <span className="material-symbols-outlined text-secondary text-base select-none">person</span>
+                    <span className="font-label-caps text-[10px] uppercase tracking-widest text-secondary font-bold">
+                      Solo Event — 1 Participant (You)
+                    </span>
+                  </div>
+                )}
+
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="group/btn relative w-full bg-secondary text-on-secondary font-label-caps text-label-caps tracking-[0.2em] transition-all hover:bg-primary hover:text-on-primary active:scale-95 uppercase flex items-center justify-center gap-3 overflow-hidden py-4 border border-secondary hover:border-primary disabled:opacity-75 font-bold"
+                  disabled={isSubmitDisabled}
+                  className="group/btn relative w-full bg-secondary text-on-secondary font-label-caps text-label-caps tracking-[0.2em] transition-all hover:bg-primary hover:text-on-primary active:scale-95 uppercase flex items-center justify-center gap-3 overflow-hidden py-4 border border-secondary hover:border-primary disabled:opacity-75 disabled:cursor-not-allowed font-bold"
                 >
                   <span className="btn-text">
-                    {isSubmitting ? "Transmitting Registration..." : "Transmit Registration"}
+                    {isSubmitting ? "Registering..." : "Register"}
                   </span>
                   {isSubmitting && (
                     <span className="material-symbols-outlined spin-gear select-none">
